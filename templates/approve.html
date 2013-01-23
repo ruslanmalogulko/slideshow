@@ -1,0 +1,458 @@
+<!doctype html>
+ 
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>jQuery UI Droppable - Simple photo manager</title>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+    <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+    <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+    <link rel="stylesheet" href="/resources/demos/style.css" />
+    <style>
+    #gallery { float: right; width: 65%; min-height: 12em; max-height:100p; } * html #gallery { height: 12em; } /* IE6 */
+    .gallery.custom-state-active {  }
+    .gallery li { float: left; width: 96px; padding: 0.4em; margin: 0 0.4em 0.4em 0; text-align: center; }
+    .gallery li h5 { margin: 0 0 0.4em; cursor: move; }
+    .gallery li a { float: right; }
+    .gallery li a.ui-icon-zoomin { float: left; }
+    .gallery li img { max-width: 80%; cursor: move; }
+ 
+    #trash { position:fixed; top:150px; width: 32%; min-height: 18em; padding: 1%;} * html #trash { height: 18em; } /* IE6 */
+    #trash h4 { line-height: 15px; margin: 0 0 0.4em; }
+    #trash h4 .ui-icon { float: left; }
+    #trash .gallery h5 { display: none; }
+
+    #submit-next { position:fixed; top: 50px; left: 10px;}
+    #list_buttons { position:fixed; top: 5px; left: 10px; }
+    #test_button { position:fixed; top: 50px; left: 180px; }
+
+    #dialog-modal {font-size:10pt; }
+    #save-modal {font-size:10pt; text-align: center }
+    .dialog-hide {display:none;}
+    #select-list-modal {font-size:10pt;}
+
+    /*for selecting list-item*/
+    #feedback { font-size: 1.4em; }
+    #selectable .ui-selecting { background: #FECA40; }
+    #selectable .ui-selected { background: #F39814; color: white; }
+    #selectable { list-style-type: none; margin: 0; padding: 0; width: 80%; }
+    #selectable li { margin: 3px; padding: 0.4em; font-size: 1em; height: 18px; }
+    
+    </style>
+    <meta charset="utf-8" />
+    <title>jQuery UI Button - Default functionality</title>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+    <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+    <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+    <link rel="stylesheet" href="/resources/demos/style.css" />
+    <script>
+    // dialog-modal
+    $(function() {
+        $( "input[type=submit], a, button" )
+            .button()
+            .click(function( event ) {
+                // event.preventDefault();
+            });
+    });
+    $(function() {
+        // $( "#dialog-modal" ).dialog({
+        //     height: 140,
+        //     modal: true
+        // });
+    });
+    // $(function() {
+    //     var $gallery = $( "#gallery" ); 
+    //     var $trash = $( "#trash" );
+    //     var $galElems = $('li', $gallery);
+    // });
+    
+
+    
+    </script>
+</head>
+
+<body>
+
+<!-- Modal tip -->
+<div id="dialog-modal" title="Attention please" class="dialog-hide">
+    <p>If you don't want select some items from list, all images will be shown after clicking on the button "Go to slideshow"</p>
+</div>
+<div id="save-modal" title="Attention please" class="dialog-hide">
+    <p>It seems you may lost your selected items now, it's OK?</p>
+    <input id="ok_button" type="submit" value="Remove from selected">
+</div>
+<div id="nothing-save-modal" title="Attention please" class="dialog-hide">
+    <p>Nothing to save</p>
+</div>
+<div id="select-list-modal" title="Choose list to load:" class="dialog-hide">
+    <p id="feedback">
+    <span>You've selected:</span> <span id="select-result">none</span>.
+    </p>
+    <ol id="selectable">
+      
+    </ol>
+    <form id="submit-load" action="">
+        <input id="load_button" type="submit" value="Load...">
+    </form>
+</div>
+
+
+
+ <script type="text/javascript">
+
+       function showListsForLoad()  
+        {  
+            $.ajax({  
+                url: "http://127.0.0.1:8000/approving_full/load",  
+                cache: false,  
+                success: function(html){  
+                    $("#selectable").html(html);  
+                }  
+            });  
+        }
+
+        function showHiddenData()  
+        {  
+            $.ajax({  
+                url: "http://127.0.0.1:8000/approving_full/hidden-data",  
+                cache: false,  
+                success: function(html){  
+                    $("#hidden-data").html(html);  
+                }  
+            });  
+        }     
+                                 
+      function show()  
+        {  
+            $.ajax({ 
+                url: "http://127.0.0.1:8000/approving/",  
+                cache: false,  
+                success: function(html){  
+                    
+                    $("#gallery").html(html);
+
+                        $(function() {
+                                                    
+
+
+                                                    // there's the gallery and the trash
+                                                    var $gallery = $( "#gallery" ),
+                                                        $trash = $( "#trash" );
+                                                    
+                                                    // let the gallery items be draggable
+                                                    $( "li", $gallery ).draggable({
+                                                        cancel: "a.ui-icon", // clicking an icon won't initiate dragging
+                                                        revert: "invalid", // when not dropped, the item will revert back to its initial position
+                                                        containment: "document",
+                                                        helper: "clone",
+                                                        cursor: "move"
+                                                    });
+                                             
+                                                    // let the trash be droppable, accepting the gallery items
+                                                    $trash.droppable({
+                                                        accept: "#gallery > li",
+                                                        activeClass: "ui-state-highlight",
+                                                        drop: function( event, ui ) {
+                                                            deleteImage( ui.draggable );
+
+                                                        }
+                                                    });
+                                             
+                                                    // let the gallery be droppable as well, accepting items from the trash
+                                                    $gallery.droppable({
+                                                        accept: "#trash li",
+                                                        activeClass: "custom-state-active",
+                                                        drop: function( event, ui ) {
+                                                            recycleImage( ui.draggable );
+                                                            
+                                                        }
+                                                    });
+                                             
+                                                    // image deletion function
+                                                    var recycle_icon = "<a href='link/to/recycle/script/when/we/have/js/off' title='Recycle this image' class='ui-icon ui-icon-refresh'>Recycle image</a>";
+                                                    function deleteImage( $item ) {
+                                                        $item.fadeOut(function() {
+                                                            var $list = $( "ul", $trash ).length ?
+                                                                $( "ul", $trash ) :
+                                                                $( "<ul id='trashElems' class='gallery ui-helper-reset'/>" ).appendTo( $trash );
+                                             
+                                                            $item.find( "a.ui-icon-trash" ).remove();
+                                                            $item.append( recycle_icon ).appendTo( $list ).fadeIn(function() {
+                                                                $item
+                                                                    .animate({ width: "48px" })
+                                                                    .find( "img" )
+                                                                        .animate({ height: "36px" });
+                                                            });
+                                                        });
+                                                    }
+                                                    
+                                                    function pushButton() {
+                                                        deleteImage(("li", $gallery));
+                                                    }
+                                                    // pushButton();
+                                                    
+                                                    
+                                                    // image recycle function
+                                                    var trash_icon = "<a href='link/to/trash/script/when/we/have/js/off' title='Delete this image' class='ui-icon ui-icon-trash'>Delete image</a>";
+
+                                                    function recycleImage( $item ) {
+                                                        $item.fadeOut(function() {
+                                                            $item
+                                                                .find( "a.ui-icon-refresh" )
+                                                                    .remove()
+                                                                .end()
+                                                                .css( "width", "96px")
+                                                                //.append( trash_icon )
+                                                                .find( "img" )
+                                                                    .css( "height", "72px" )
+                                                                .end()
+                                                                .appendTo( $gallery )
+                                                                .append( trash_icon )
+                                                                .fadeIn();
+                                                        });
+                                                    }
+                                             
+                                                    // image preview function, demonstrating the ui.dialog used as a modal window
+                                                    function viewLargerImage( $link ) {
+                                                        var src = $link.attr( "href" ),
+                                                            title = $link.siblings( "img" ).attr( "alt" ),
+                                                            $modal = $( "img[src$='" + src + "']" );
+                                             
+
+                                                            var img = $( "<img alt='" + title + "' width='200' height='100' style='display: none; padding: 8px;' />" )
+                                                                .attr( "src", src ).appendTo( "body" );
+                                                            setTimeout(function() {
+                                                                img.dialog({
+                                                                    title: title,
+                                                                    width: 700,
+                                                                    modal: true
+                                                                });
+                                                            }, 1 );
+                                                        
+                                                    }
+                                             
+                                                    // resolve the icons behavior with event delegation
+                                                    $( "ul.gallery > li" ).click(function( event ) {
+                                                        var $item = $( this ),
+                                                            $target = $( event.target );
+                                             
+                                                        if ( $target.is( "a.ui-icon-trash" ) ) {
+                                                            deleteImage( $item );
+                                                        } else if ( $target.is( "a.ui-icon-zoomin" ) ) {
+                                                            viewLargerImage( $target );
+                                                        } else if ( $target.is( "a.ui-icon-refresh" ) ) {
+                                                            recycleImage( $item );
+                                                        }
+                                             
+                                                        return false;
+                                                    });
+                                                    
+                                                    function pushMe() {
+                                                        var hidden = $('p', '#hidden-data');
+                                                        var galItems =  $('li', $gallery);
+                                                        console.log(hidden.length)
+                                                        for(var j=0; j<hidden.length; j++) {
+                                                            
+                                                            value = hidden[j].getAttribute("id").substring(0,4);
+                                                            console.log(value)   
+                                                            deleteImage($('#'+value, $gallery));
+                                                                
+                                                            }
+                                                    }
+
+                                                    document.getElementById("test_button").onclick = pushMe;
+
+
+// To add <new list> button functionality
+                                                    var newListButton = document.getElementById("new_button");
+                                                    var modalOkButton = document.getElementById("ok_button");
+                                                    function trashClear($item) {
+                                                        $trash_child = $('li', $trash);
+                                                        if ($trash_child.length > 0) { $(function() {
+                                                            $( "#save-modal" ).dialog({
+                                                                height: 160,
+                                                                modal: true
+                                                                });
+                                                            modalOkButton.onclick = approvedDelete;
+                                                            // modalCancelButton.onclick = 
+                                                            });
+                                                        }
+                                                        function approvedDelete () {
+                                                            for (var i=0; i<$trash_child.length; i++) {
+                                                            var idName = '';
+                                                            idName = '#'+($trash_child[i].getAttribute("id"));
+                                                            recycleImage($(idName, $trash));
+                                                        }}
+
+                                                    }
+                                                    newListButton.onclick = trashClear;
+
+
+
+
+                                                });
+                            
+
+    // To add new data to AJAX code
+
+
+                                 
+// To add <save list> button functionality
+                                var saveListButton = document.getElementById("save_button");
+                                // alert("hello");
+                                function sendList(listToSave) {
+                                         // xmlHTTP sending
+                                    var xmlhttp=false;
+                                    console.log(listToSave);
+                                    if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
+                                        try {
+                                            xmlhttp = new XMLHttpRequest();
+                                        } catch (e) {
+                                            xmlhttp=false;
+                                        }
+                                    }
+                                    if (!xmlhttp && window.createRequest) {
+                                        try {
+                                            xmlhttp = window.createRequest();
+                                        } catch (e) {
+                                            xmlhttp=false;
+                                        }
+                                    }
+                                    //var params = 'a=' + encodeURIComponent('1010101');
+                                    xmlhttp.open("POST", 'cath_to_save_list', true);
+                                    xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                                    xmlhttp.send(listToSave);
+                                    xmlhttp.onreadystatechange=function() {
+                                      if (xmlhttp.readyState==4) {
+                                        console.log("xmlhttp sended");
+                                      }
+                                     }
+
+                                }
+
+
+
+
+
+                                // alert(saveListButton.getAttribute("id"));
+                                
+                                saveListButton.onclick = function() {
+                                    
+                                    var isTrash = document.getElementById("trashElems");
+                                    if (isTrash===null || isTrash.childNodes.length===0 ) { $(function() {
+                                                            $( "#nothing-save-modal" ).dialog({
+                                                                height: 160,
+                                                                modal: true
+                                                                }); 
+                                                            });
+                                                        }
+                                    else {
+                                        var time = new Date();
+                                        var listName = prompt("Enter list name", "list_"+time.getFullYear()+"_"+(time.getMonth()+1)+"_"+time.getDate()+"_"+time.getHours()+":"+time.getMinutes());
+                                        var trashNodes = document.getElementById("trashElems").childNodes;
+                                        var listToSave =  "list_name="+listName;;
+                                        for(var i=0; i<trashNodes.length; i++) {
+                                            var a = trashNodes[i].childNodes[3].getAttribute("src");
+                                            listToSave += "&item"+i+"="+a; 
+                                            };
+                                        
+                                        sendList(listToSave);} 
+                                }
+
+                                var loadListButton = document.getElementById("loadlist_button");
+                                var loadB = document.getElementById("load_button");
+                                var name = '';
+                                function loadListB() {
+                                        
+                                        $( "#selectable" ).selectable({
+                                          stop: function() {
+                                            var result = $( "#select-result" ).empty();
+                                            $( ".ui-selected", this ).each(function() {
+                                              index = $( "#selectable li" ).index( this );
+                                              name = 'name=' + $("li", "#selectable")[index].innerHTML;
+                                              result.append( " #" + ( index ) );
+                                              $(function() {sendList(name)});
+                                              // name='name='
+                                            });
+                                          }
+                                        });
+
+                                    
+                                    $( "#select-list-modal" ).dialog({
+                                        height: 350,
+                                        modal: true
+                                    });
+                                    
+
+                                };
+
+
+
+                                loadListButton.onclick = loadListB;
+
+
+                                
+                               
+
+                                
+    //END
+                                                            }  
+                                                        });  
+                                                    } 
+                                            		
+                                                  
+                                                    $(document).ready(function(){  
+                                                        showListsForLoad();
+                                                        show();
+                                                        showHiddenData();
+                                                        setInterval('show()',5000);
+                                                        setInterval('showListsForLoad();',5000);
+                                                        setInterval('showHiddenData();',5000);
+                                                    });   
+     </script>
+
+
+
+
+
+
+<div>
+<form id="submit-next" action="/slideshow9">
+    <input type="submit" value="Go to slideshow">
+</form>
+<div id="list_buttons">
+    <table>
+    <tr>
+        <td><input id="loadlist_button" type="submit" value="Load list"></td>
+        <td><input id="save_button" type="submit" value="Save list"></td>
+        <td><input id="new_button" type="submit" value="New list"></td>
+        <td><input id="test_button" type="submit" value="Show loaded list"></td>
+    </tr>
+    </table>   
+</div>
+</div>
+<div class="ui-widget ui-helper-clearfix">
+
+    <ul id="gallery" class="gallery ui-helper-reset ui-helper-clearfix">
+    <!-- Input by AJAX -->
+    
+
+    </ul>
+    
+<div input>
+
+</div>
+    
+
+<div id="trash" class="ui-widget-content ui-state-default">
+    <h4 class="ui-widget-header"><span class="ui-icon ui-icon-trash">Selected items</span> Selected items</h4>
+
+
+
+<div id="hidden-data" class="dialog-hide">
+    
+</div> 
+    
+</body>
+</html>
+

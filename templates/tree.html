@@ -1,0 +1,67 @@
+<html>
+    <head>
+        <title>Use jsTree</title>
+        <script src="{{ STATIC_URL }}_lib/jquery.js">
+        </script>
+        <script src="{{ STATIC_URL }}jquery.jstree.js">
+        </script>
+        <style type="text/css">
+         /*.jstree li > a > .jstree-icon {  display:none !important; } */
+        </style>
+        <script>
+            $(document).ready(function(){
+                $(function () {
+                    $("#demo1").jstree({ 
+                        "types" : {"default" : {"icon" : {"image" : "{{ STATIC_URL }}folder.png"}, 'valid_children' : 'default'}},
+                        "core" : {"animation" : 0},
+                        "xml_data" : {
+                            "data" : "" + 
+                "<root>" + 
+                    "<item id='node_1'>" + 
+                        "<content><name>Root node 1</name></content>" + 
+                    "</item>" + 
+                    "<item>" + 
+                        "<content><name>Root node 2</name></content>" + 
+                    "</item>" + 
+                    "<item id='child' parent_id='node_1'>" + 
+                        "<content><name url='Its just a test'>Child node</name></content>" + 
+                    "</item>" + 
+                    "<item rel='iteration' parent_id='child'>" + 
+                        "<content><name>Child node</name></content>" + 
+                    "</item>" + 
+                "</root>"
+                        },
+                        "plugins" : [ "themes", "xml_data", "ui", "contextmenu", "crrm", "themes" ],
+                        "themes" : {"theme" : "apple"}
+
+                    }).
+                    bind("select_node.jstree", function(event, data) {
+                        alert(data.rslt.obj.attr("id"));
+                    }).
+                    delegate("a", "click", function (event, data) {event.preventDefault(); })
+                });  
+            });
+        </script>
+    </head>
+    <body> 
+        <div id="demo1">
+                <root> 
+                    <item id='node_1'>
+                        <content><name>Root node 1</name></content>
+                    </item>
+                    <item>
+                        <content><name>Root node 2</name></content>
+                    </item> 
+                    <item id='child' parent_id='node_1'>
+                        <content><name url='Its just a test'>Child node</name></content>
+                    </item>
+                    <item rel='iteration' parent_id='child'>
+                        <content><name>Child node</name></content> 
+                    </item>
+                </root>
+        </div>            
+        <img src="{{ STATIC_URL }}Image.jpg" alt="The peaks of High Tatras" width="96" height="72" />
+        <div id="treeViewDiv">
+        </div>
+    </body>
+</html>

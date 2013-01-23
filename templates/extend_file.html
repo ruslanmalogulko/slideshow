@@ -1,0 +1,12 @@
+{% extends "current_datetime.html" %}
+
+{% block title %}The current time
+{% endblock %}
+
+{% block content %}
+<p>It is now {{ current_date }}.</p>
+<p>Host: {{ path }}</p>
+<p>Is https used: {{ is_sec }}</p>
+<p>User info: {{ user_info }}</p>
+<p>Author: {{ author }}</p>
+{% endblock %}

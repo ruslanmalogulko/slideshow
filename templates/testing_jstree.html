@@ -1,0 +1,39 @@
+<html>
+    <head>
+        <title>Use jsTree</title>
+        <script src="_lib/jquery.js">
+        </script>
+        <script src="jquery.jstree.js">
+        </script>
+        <script>
+            $(document).ready(function(){
+                $("#treeViewDiv").jstree({
+                    "json_data" : {
+                        "data":[
+                            {
+                                "data" : "Search engines",
+                                "children" :[
+                                             {"data":"Yahoo"},
+                                             {"data":"Bing"},
+                                             {"data":"Google", "children":[{"data":"Youtube"},{"data":"Gmail"},{"data":"Orkut"}]}
+                                            ]
+                            },
+                            {
+                                "data" : "Networking sites",
+                                "children" :[
+                                    {"data":"Facebook"},
+                                    {"data":"Twitter"}
+                                ]
+                            }
+                        ]
+                    },
+                    "plugins" : [ "themes", "json_data", "ui" ]
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <div id="treeViewDiv">
+        </div>
+    </body>
+</html>
